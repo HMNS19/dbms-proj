@@ -229,6 +229,62 @@ app.get('/view/low-stock', (req, res) => {
     });
   });
 
+// Route to get all patients
+app.get('/get-patients', (req, res) => {
+    const sql = 'SELECT patient_id, name FROM patients ORDER BY name';
+    db.query(sql, (err, results) => {
+        if (err) {
+            console.error('Error fetching patients:', err);
+            return res.status(500).json({ error: 'Failed to fetch patients.' });
+        }
+        res.json(results);
+    });
+});
+
+// Route to get all doctors
+app.get('/get-doctors', (req, res) => {
+    const sql = 'SELECT doctor_id, name FROM doctors ORDER BY name';
+    db.query(sql, (err, results) => {
+        if (err) {
+            console.error('Error fetching doctors:', err);
+            return res.status(500).json({ error: 'Failed to fetch doctors.' });
+        }
+        res.json(results);
+    });
+});
+
+// Route to get all medicines
+app.get('/get-medicines', (req, res) => {
+    const sql = 'SELECT medicine_id, name, brand, price, stock FROM medicines ORDER BY name';
+    db.query(sql, (err, results) => {
+        if (err) {
+            console.error('Error fetching medicines:', err);
+            return res.status(500).json({ error: 'Failed to fetch medicines.' });
+        }
+        res.json(results);
+    });
+});
+
+// Route to get all prescriptions
+app.get('/get-prescriptions', (req, res) => {
+    const sql = `
+        SELECT p.prescription_id, p.issue_date, 
+               pat.name as patient_name, 
+               doc.name as doctor_name
+        FROM prescriptions p
+        JOIN patients pat ON p.patient_id = pat.patient_id
+        JOIN doctors doc ON p.doctor_id = doc.doctor_id
+        ORDER BY p.issue_date DESC
+    `;
+    db.query(sql, (err, results) => {
+        if (err) {
+            console.error('Error fetching prescriptions:', err);
+            return res.status(500).json({ error: 'Failed to fetch prescriptions.' });
+        }
+        res.json(results);
+    });
+});
+
 app.listen(port, () => {
   console.log(`Server running at http://localhost:${port}`);
 });

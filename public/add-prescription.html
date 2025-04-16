@@ -56,16 +56,20 @@
             <form id="prescriptionForm" class="form-container">
                 <div class="form-group">
                     <label class="form-label">
-                        <i class="fas fa-user-md"></i> Doctor ID
+                        <i class="fas fa-user-md"></i> Doctor
                     </label>
-                    <input class="form-control" name="doctor_id" type="number" placeholder="Enter doctor's ID" required>
+                    <select class="form-control" name="doctor_id" required>
+                        <option value="" disabled selected>Select doctor</option>
+                    </select>
                 </div>
 
                 <div class="form-group">
                     <label class="form-label">
-                        <i class="fas fa-user"></i> Patient ID
+                        <i class="fas fa-user"></i> Patient
                     </label>
-                    <input class="form-control" name="patient_id" type="number" placeholder="Enter patient's ID" required>
+                    <select class="form-control" name="patient_id" required>
+                        <option value="" disabled selected>Select patient</option>
+                    </select>
                 </div>
 
                 <div class="form-group">
@@ -82,8 +86,10 @@
                     <div id="medicinesList">
                         <div class="medicine-item" style="background-color: var(--light-bg); padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">
                             <div class="form-group">
-                                <label class="form-label">Medicine ID</label>
-                                <input class="form-control" name="medicine_id[]" type="number" placeholder="Enter medicine ID" required>
+                                <label class="form-label">Medicine</label>
+                                <select class="form-control" name="medicine_id[]" required>
+                                    <option value="" disabled selected>Select medicine</option>
+                                </select>
                             </div>
                             <div class="form-group">
                                 <label class="form-label">Dosage</label>
@@ -115,6 +121,51 @@
     </div>
 
     <script>
+        // Function to populate dropdowns
+        async function populateDropdowns() {
+            try {
+                // Fetch doctors
+                const doctorsRes = await fetch('/get-doctors');
+                const doctors = await doctorsRes.json();
+                const doctorSelect = document.querySelector('select[name="doctor_id"]');
+                doctors.forEach(doctor => {
+                    const option = document.createElement('option');
+                    option.value = doctor.doctor_id;
+                    option.textContent = `${doctor.name} (ID: ${doctor.doctor_id})`;
+                    doctorSelect.appendChild(option);
+                });
+
+                // Fetch patients
+                const patientsRes = await fetch('/get-patients');
+                const patients = await patientsRes.json();
+                const patientSelect = document.querySelector('select[name="patient_id"]');
+                patients.forEach(patient => {
+                    const option = document.createElement('option');
+                    option.value = patient.patient_id;
+                    option.textContent = `${patient.name} (ID: ${patient.patient_id})`;
+                    patientSelect.appendChild(option);
+                });
+
+                // Fetch medicines
+                const medicinesRes = await fetch('/get-medicines');
+                const medicines = await medicinesRes.json();
+                const medicineSelects = document.querySelectorAll('select[name="medicine_id[]"]');
+                medicineSelects.forEach(select => {
+                    medicines.forEach(medicine => {
+                        const option = document.createElement('option');
+                        option.value = medicine.medicine_id;
+                        option.textContent = `${medicine.name} (${medicine.brand}) - ₹${medicine.price} - Stock: ${medicine.stock}`;
+                        select.appendChild(option);
+                    });
+                });
+            } catch (error) {
+                console.error('Error populating dropdowns:', error);
+            }
+        }
+
+        // Call the function when the page loads
+        document.addEventListener('DOMContentLoaded', populateDropdowns);
+
         function addMedicine() {
             const medicinesList = document.getElementById("medicinesList");
             const newMedicine = document.createElement("div");
@@ -125,8 +176,10 @@
             newMedicine.style.marginBottom = "1rem";
             newMedicine.innerHTML = `
                 <div class="form-group">
-                    <label class="form-label">Medicine ID</label>
-                    <input class="form-control" name="medicine_id[]" type="number" placeholder="Enter medicine ID" required>
+                    <label class="form-label">Medicine</label>
+                    <select class="form-control" name="medicine_id[]" required>
+                        <option value="" disabled selected>Select medicine</option>
+                    </select>
                 </div>
                 <div class="form-group">
                     <label class="form-label">Dosage</label>
@@ -141,6 +194,20 @@
                 </button>
             `;
             medicinesList.appendChild(newMedicine);
+            
+            // Populate the new medicine select dropdown
+            const newSelect = newMedicine.querySelector('select[name="medicine_id[]"]');
+            fetch('/get-medicines')
+                .then(res => res.json())
+                .then(medicines => {
+                    medicines.forEach(medicine => {
+                        const option = document.createElement('option');
+                        option.value = medicine.medicine_id;
+                        option.textContent = `${medicine.name} (${medicine.brand}) - ₹${medicine.price} - Stock: ${medicine.stock}`;
+                        newSelect.appendChild(option);
+                    });
+                })
+                .catch(error => console.error('Error populating medicine dropdown:', error));
         }
 
         document.getElementById("prescriptionForm").onsubmit = async (e) => {
@@ -193,8 +260,10 @@
                     document.getElementById("medicinesList").innerHTML = `
                         <div class="medicine-item" style="background-color: var(--light-bg); padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">
                             <div class="form-group">
-                                <label class="form-label">Medicine ID</label>
-                                <input class="form-control" name="medicine_id[]" type="number" placeholder="Enter medicine ID" required>
+                                <label class="form-label">Medicine</label>
+                                <select class="form-control" name="medicine_id[]" required>
+                                    <option value="" disabled selected>Select medicine</option>
+                                </select>
                             </div>
                             <div class="form-group">
                                 <label class="form-label">Dosage</label>
