@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pharmacy Management System</title>
+  <link rel="stylesheet" href="styles.css">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+  <nav class="navbar">
+    <div class="nav-container">
+      <a href="index.html" class="logo">
+        <i class="fas fa-pills"></i> PharmacyMS
+      </a>
+      <ul class="nav-menu">
+        <li class="nav-item">
+          <a href="#" class="nav-link">
+            <i class="fas fa-plus-circle"></i> Add
+          </a>
+          <ul class="dropdown-menu">
+            <li><a href="add-patient.html" class="dropdown-item"><i class="fas fa-user-plus"></i> Add Patient</a></li>
+            <li><a href="add-doctor.html" class="dropdown-item"><i class="fas fa-user-md"></i> Add Doctor</a></li>
+            <li><a href="add-medicine.html" class="dropdown-item"><i class="fas fa-capsules"></i> Add Medicine</a></li>
+            <li><a href="add-prescription.html" class="dropdown-item"><i class="fas fa-prescription"></i> Add Prescription</a></li>
+          </ul>
+        </li>
+        <li class="nav-item">
+          <a href="#" class="nav-link">
+            <i class="fas fa-eye"></i> View
+          </a>
+          <ul class="dropdown-menu">
+            <li><a href="views.html" class="dropdown-item"><i class="fas fa-list"></i> View Records</a></li>
+          </ul>
+        </li>
+        <li class="nav-item">
+          <a href="#" class="nav-link">
+            <i class="fas fa-file-invoice"></i> Generate
+          </a>
+          <ul class="dropdown-menu">
+            <li><a href="generate-bill.html" class="dropdown-item"><i class="fas fa-receipt"></i> Generate Bill</a></li>
+          </ul>
+        </li>
+      </ul>
+    </div>
+  </nav>
+
+  <div class="container">
+    <div class="card">
+      <h1>Welcome to Pharmacy Management System</h1>
+      <p>Streamline your pharmacy operations with our comprehensive management solution. Manage patients, prescriptions, inventory, and billing all in one place.</p>
+      
+      <div class="features-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 2rem; margin-top: 2rem;">
+        <div class="feature-card" style="background: var(--light-bg); padding: 1.5rem; border-radius: 8px; text-align: center;">
+          <i class="fas fa-users" style="font-size: 2.5rem; color: var(--primary-color); margin-bottom: 1rem;"></i>
+          <h3 style="color: var(--text-color); margin-bottom: 0.5rem;">Patient Management</h3>
+          <p style="color: var(--text-color);">Efficiently manage patient records and history</p>
+        </div>
+        
+        <div class="feature-card" style="background: var(--light-bg); padding: 1.5rem; border-radius: 8px; text-align: center;">
+          <i class="fas fa-pills" style="font-size: 2.5rem; color: var(--primary-color); margin-bottom: 1rem;"></i>
+          <h3 style="color: var(--text-color); margin-bottom: 0.5rem;">Inventory Control</h3>
+          <p style="color: var(--text-color);">Track and manage medicine inventory</p>
+        </div>
+        
+        <div class="feature-card" style="background: var(--light-bg); padding: 1.5rem; border-radius: 8px; text-align: center;">
+          <i class="fas fa-file-invoice-dollar" style="font-size: 2.5rem; color: var(--primary-color); margin-bottom: 1rem;"></i>
+          <h3 style="color: var(--text-color); margin-bottom: 0.5rem;">Billing System</h3>
+          <p style="color: var(--text-color);">Generate and manage bills efficiently</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

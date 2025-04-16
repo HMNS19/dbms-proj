@@ -1,0 +1,251 @@
+CREATE TABLE patients (
+    patient_id INT PRIMARY KEY AUTO_INCREMENT,
+    name VARCHAR(100),
+    dob DATE,
+    gender ENUM('Male', 'Female', 'Other'),
+    contact VARCHAR(15),
+    email VARCHAR(100) UNIQUE
+);
+
+CREATE TABLE doctors (
+    doctor_id INT PRIMARY KEY AUTO_INCREMENT,
+    name VARCHAR(100),
+    specialization VARCHAR(100),
+    license_number VARCHAR(50) UNIQUE,
+    contact VARCHAR(15),
+    email VARCHAR(100) UNIQUE
+);
+
+CREATE TABLE medicines (
+    medicine_id INT PRIMARY KEY AUTO_INCREMENT,
+    name VARCHAR(100),
+    brand VARCHAR(100),
+    price DECIMAL(10, 2),
+    stock INT,
+    expiry_date DATE
+);
+
+CREATE TABLE prescriptions (
+    prescription_id INT PRIMARY KEY AUTO_INCREMENT,
+    doctor_id INT,
+    patient_id INT,
+    issue_date DATE DEFAULT (CURRENT_DATE),
+    notes TEXT,
+    FOREIGN KEY (doctor_id) REFERENCES doctors(doctor_id),
+    FOREIGN KEY (patient_id) REFERENCES patients(patient_id)
+);
+
+CREATE TABLE prescription_details (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    prescription_id INT,
+    medicine_id INT,
+    dosage VARCHAR(100),
+    quantity INT,
+    FOREIGN KEY (prescription_id) REFERENCES prescriptions(prescription_id),
+    FOREIGN KEY (medicine_id) REFERENCES medicines(medicine_id)
+);
+
+CREATE TABLE sales (
+    sale_id INT PRIMARY KEY AUTO_INCREMENT,
+    prescription_id INT,
+    sale_date DATE DEFAULT (CURRENT_DATE),
+    total_amount DECIMAL(10, 2),
+    FOREIGN KEY (prescription_id) REFERENCES prescriptions(prescription_id)
+);
+
+CREATE TABLE suppliers (
+    supplier_id INT PRIMARY KEY AUTO_INCREMENT,
+    name VARCHAR(100),
+    contact VARCHAR(15),
+    email VARCHAR(100),
+    address TEXT
+);
+
+CREATE VIEW expired_medicines AS
+SELECT medicine_id, name, brand, expiry_date
+FROM medicines
+WHERE expiry_date < CURDATE();
+
+CREATE VIEW low_stock_medicines AS
+SELECT medicine_id, name, stock
+FROM medicines
+WHERE stock < 10;
+
+CREATE VIEW daily_sales_summary AS
+SELECT sale_date, COUNT(sale_id) AS total_sales, SUM(total_amount) AS total_earning
+FROM sales
+GROUP BY sale_date;
+
+DELIMITER //
+CREATE PROCEDURE add_prescription(
+    IN doc_id INT,
+    IN pat_id INT,
+    IN notes TEXT
+)
+BEGIN
+    INSERT INTO prescriptions (doctor_id, patient_id, notes)
+    VALUES (doc_id, pat_id, notes);
+END //
+DELIMITER ;
+
+DELIMITER //
+CREATE PROCEDURE generate_bill(
+    IN pres_id INT
+)
+BEGIN
+    DECLARE total DECIMAL(10, 2) DEFAULT 0;
+    
+    SELECT SUM(m.price * pd.quantity)
+    INTO total
+    FROM prescription_details pd
+    JOIN medicines m ON pd.medicine_id = m.medicine_id
+    WHERE pd.prescription_id = pres_id;
+    
+    INSERT INTO sales (prescription_id, total_amount)
+    VALUES (pres_id, total);
+END //
+DELIMITER ;
+
+DELIMITER //
+CREATE PROCEDURE refill_stock(
+    IN med_id INT,
+    IN added_stock INT
+)
+BEGIN
+    UPDATE medicines
+    SET stock = stock + added_stock
+    WHERE medicine_id = med_id;
+END //
+DELIMITER ;
+
+DELIMITER //
+CREATE TRIGGER reduce_stock_after_sale
+AFTER INSERT ON sales
+FOR EACH ROW
+BEGIN
+    DECLARE done INT DEFAULT FALSE;
+    DECLARE med_id INT;
+    DECLARE qty INT;
+    DECLARE cur CURSOR FOR 
+        SELECT medicine_id, quantity FROM prescription_details
+        WHERE prescription_id = NEW.prescription_id;
+    DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = TRUE;
+    
+    OPEN cur;
+    read_loop: LOOP
+        FETCH cur INTO med_id, qty;
+        IF done THEN
+            LEAVE read_loop;
+        END IF;
+        
+        UPDATE medicines
+        SET stock = stock - qty
+        WHERE medicine_id = med_id;
+    END LOOP;
+    CLOSE cur;
+END //
+DELIMITER ;
+
+CREATE TABLE expired_log (
+    log_id INT PRIMARY KEY AUTO_INCREMENT,
+    medicine_id INT,
+    expired_on DATE
+);
+
+DELIMITER //
+CREATE TRIGGER log_expired_medicine
+AFTER UPDATE ON medicines
+FOR EACH ROW
+BEGIN
+    IF NEW.expiry_date < CURDATE() THEN
+        INSERT INTO expired_log (medicine_id, expired_on)
+        VALUES (NEW.medicine_id, CURDATE());
+    END IF;
+END //
+DELIMITER ;
+
+CREATE TABLE low_stock_alerts (
+    alert_id INT PRIMARY KEY AUTO_INCREMENT,
+    medicine_id INT,
+    stock_level INT,
+    alert_date DATE
+);
+
+DELIMITER //
+CREATE TRIGGER low_stock_alert
+AFTER UPDATE ON medicines
+FOR EACH ROW
+BEGIN
+    IF NEW.stock < 5 THEN
+        INSERT INTO low_stock_alerts (medicine_id, stock_level, alert_date)
+        VALUES (NEW.medicine_id, NEW.stock, CURDATE());
+    END IF;
+END //
+DELIMITER ;
+
+INSERT INTO doctors (name, specialization, license_number, contact, email) 
+VALUES 
+('Dr. John Smith', 'Cardiologist', 'XYZ12345', '9876543210', 'dr.johnsmith@example.com'),
+('Dr. Alice Brown', 'Dermatologist', 'ABC54321', '9123456789', 'dr.alicebrown@example.com');
+
+INSERT INTO patients (name, contact, email) 
+VALUES 
+('Michael Davis', '9871234567', 'michael.davis@example.com'),
+('Sarah Wilson', '9129876543', 'sarah.wilson@example.com');
+
+INSERT INTO medicines (name, brand, price, stock, expiry_date) 
+VALUES 
+('Aspirin', 'Bayer', 10.50, 100, '2025-12-31'),
+('Paracetamol', 'Generic', 5.00, 200, '2026-06-30'),
+('Amoxicillin', 'Amgen', 20.00, 50, '2024-11-20');
+
+INSERT INTO prescriptions (doctor_id, patient_id, issue_date, notes) 
+VALUES 
+(1, 1, '2025-04-14', 'Take 1 Aspirin tablet daily for 10 days'),
+(2, 2, '2025-04-14', 'Take 1 Paracetamol tablet every 6 hours for 5 days');
+
+INSERT INTO prescription_details (prescription_id, medicine_id, dosage, quantity) 
+VALUES 
+(1, 1, '1 tablet daily', 10),  -- Aspirin for Prescription 1
+(2, 2, '1 tablet every 6 hours', 15);  -- Paracetamol for Prescription 2
+
+INSERT INTO sales (prescription_id, sale_date, total_amount) 
+VALUES 
+(1, '2025-04-14', 105.00),
+(2, '2025-04-14', 75.00);
+
+SELECT name, stock FROM medicines WHERE stock < 10;
+
+SELECT m.name, SUM(pd.quantity) AS total_quantity_sold
+FROM sales s
+JOIN prescription_details pd ON s.prescription_id = pd.prescription_id
+JOIN medicines m ON pd.medicine_id = m.medicine_id
+GROUP BY m.name
+ORDER BY total_quantity_sold DESC;
+
+SELECT d.name AS doctor_name, COUNT(p.prescription_id) AS total_prescriptions
+FROM prescriptions p
+JOIN doctors d ON p.doctor_id = d.doctor_id
+GROUP BY d.name;
+
+UPDATE medicines SET stock = 5 WHERE medicine_id = 1;
+
+SELECT name, stock FROM medicines WHERE stock < 10;
+
+START TRANSACTION;
+CALL generate_bill(1);  -- This generates the bill for Prescription ID 1
+COMMIT;
+
+SELECT * FROM low_stock_medicines;
+
+SELECT * FROM expired_log;
+SELECT * FROM low_stock_alerts;
+
+SELECT * FROM medicines;
+
+CALL generate_bill(1);
+SELECT * FROM sales WHERE prescription_id = 1;
+
+SELECT * FROM daily_sales_summary;
+
+

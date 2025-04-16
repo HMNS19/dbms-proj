@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>View Reports - Pharmacy Management System</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="index.html" class="logo">
+                <i class="fas fa-pills"></i> PharmacyMS
+            </a>
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="#" class="nav-link">
+                        <i class="fas fa-plus-circle"></i> Add
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li><a href="add-patient.html" class="dropdown-item"><i class="fas fa-user-plus"></i> Add Patient</a></li>
+                        <li><a href="add-doctor.html" class="dropdown-item"><i class="fas fa-user-md"></i> Add Doctor</a></li>
+                        <li><a href="add-medicine.html" class="dropdown-item"><i class="fas fa-capsules"></i> Add Medicine</a></li>
+                        <li><a href="add-prescription.html" class="dropdown-item"><i class="fas fa-prescription"></i> Add Prescription</a></li>
+                    </ul>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link">
+                        <i class="fas fa-eye"></i> View
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li><a href="views.html" class="dropdown-item"><i class="fas fa-list"></i> View Records</a></li>
+                    </ul>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link">
+                        <i class="fas fa-file-invoice"></i> Generate
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li><a href="generate-bill.html" class="dropdown-item"><i class="fas fa-receipt"></i> Generate Bill</a></li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="card">
+            <div class="form-header" style="display: flex; align-items: center; margin-bottom: 2rem;">
+                <i class="fas fa-chart-bar" style="font-size: 2rem; color: var(--primary-color); margin-right: 1rem;"></i>
+                <h1 style="color: var(--text-color);">Reports & Analytics</h1>
+            </div>
+
+            <div class="report-filters" style="display: flex; gap: 1rem; margin-bottom: 2rem;">
+                <button onclick="load('low-stock')" class="btn" style="background-color: #ffc107; color: #000;">
+                    <i class="fas fa-exclamation-triangle"></i> Low Stock
+                </button>
+                <button onclick="load('expired')" class="btn" style="background-color: #dc3545; color: white;">
+                    <i class="fas fa-calendar-times"></i> Expired Medicines
+                </button>
+            </div>
+
+            <div id="output" class="table-container" style="overflow-x: auto;">
+                <div class="no-data" style="text-align: center; padding: 2rem; color: var(--text-color);">
+                    <i class="fas fa-database" style="font-size: 3rem; color: var(--light-bg); margin-bottom: 1rem;"></i>
+                    <p>Select a report type to view data</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        async function load(type) {
+            const output = document.getElementById("output");
+            output.innerHTML = `
+                <div style="text-align: center; padding: 2rem;">
+                    <i class="fas fa-spinner fa-spin" style="font-size: 2rem; color: var(--primary-color);"></i>
+                    <p style="margin-top: 1rem; color: var(--text-color);">Loading data...</p>
+                </div>
+            `;
+
+            try {
+                let res = await fetch('/view/' + type);
+                let data = await res.json();
+                
+                if (data.length > 0) {
+                    let html = `<table class="table"><thead><tr>`;
+                    Object.keys(data[0]).forEach(col => {
+                        html += `<th>${col.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}</th>`;
+                    });
+                    html += `</tr></thead><tbody>`;
+                    
+                    data.forEach(row => {
+                        html += `<tr>`;
+                        Object.values(row).forEach(val => {
+                            if (type === 'expired' && val === 'true') {
+                                html += `<td><span class="badge" style="background-color: #dc3545; color: white; padding: 0.5rem; border-radius: 4px;">Expired</span></td>`;
+                            } else if (type === 'low-stock' && typeof val === 'number' && val < 10) {
+                                html += `<td><span class="badge" style="background-color: #ffc107; color: #000; padding: 0.5rem; border-radius: 4px;">Low Stock</span></td>`;
+                            } else {
+                                html += `<td>${val}</td>`;
+                            }
+                        });
+                        html += `</tr>`;
+                    });
+                    html += `</tbody></table>`;
+                    output.innerHTML = html;
+                } else {
+                    output.innerHTML = `
+                        <div class="no-data" style="text-align: center; padding: 2rem; color: var(--text-color);">
+                            <i class="fas fa-info-circle" style="font-size: 3rem; color: var(--light-bg); margin-bottom: 1rem;"></i>
+                            <p>No data found for the selected report.</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                output.innerHTML = `
+                    <div class="error" style="text-align: center; padding: 2rem; color: #721c24; background-color: #f8d7da; border-radius: 8px;">
+                        <i class="fas fa-exclamation-circle" style="font-size: 3rem; margin-bottom: 1rem;"></i>
+                        <p>An error occurred while loading the data. Please try again.</p>
+                    </div>
+                `;
+            }
+        }
+    </script>
+</body>
+</html>

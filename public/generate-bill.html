@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generate Bill - Pharmacy Management System</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="index.html" class="logo">
+                <i class="fas fa-pills"></i> PharmacyMS
+            </a>
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="#" class="nav-link">
+                        <i class="fas fa-plus-circle"></i> Add
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li><a href="add-patient.html" class="dropdown-item"><i class="fas fa-user-plus"></i> Add Patient</a></li>
+                        <li><a href="add-doctor.html" class="dropdown-item"><i class="fas fa-user-md"></i> Add Doctor</a></li>
+                        <li><a href="add-medicine.html" class="dropdown-item"><i class="fas fa-capsules"></i> Add Medicine</a></li>
+                        <li><a href="add-prescription.html" class="dropdown-item"><i class="fas fa-prescription"></i> Add Prescription</a></li>
+                    </ul>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link">
+                        <i class="fas fa-eye"></i> View
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li><a href="views.html" class="dropdown-item"><i class="fas fa-list"></i> View Records</a></li>
+                    </ul>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link">
+                        <i class="fas fa-file-invoice"></i> Generate
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li><a href="generate-bill.html" class="dropdown-item"><i class="fas fa-receipt"></i> Generate Bill</a></li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="card">
+            <div class="form-header" style="display: flex; align-items: center; margin-bottom: 2rem;">
+                <i class="fas fa-file-invoice-dollar" style="font-size: 2rem; color: var(--primary-color); margin-right: 1rem;"></i>
+                <h1 style="color: var(--text-color);">Generate Bill</h1>
+            </div>
+            
+            <form id="billForm" class="form-container">
+                <div class="form-group">
+                    <label class="form-label">
+                        <i class="fas fa-prescription"></i> Prescription ID
+                    </label>
+                    <input class="form-control" name="prescription_id" placeholder="Enter prescription ID" required>
+                </div>
+
+                <div class="form-actions" style="display: flex; gap: 1rem; margin-top: 2rem;">
+                    <button type="submit" class="btn" style="background-color: #28a745;">
+                        <i class="fas fa-file-invoice"></i> Generate Bill
+                    </button>
+                    <button type="reset" class="btn" style="background-color: var(--light-bg); color: var(--text-color);">
+                        <i class="fas fa-undo"></i> Reset Form
+                    </button>
+                </div>
+            </form>
+
+            <div id="msg" class="message-container" style="margin-top: 2rem; padding: 1rem; border-radius: 8px; display: none;"></div>
+
+            <div id="billDetails" class="bill-details" style="margin-top: 2rem; display: none;">
+                <div class="bill-header" style="text-align: center; margin-bottom: 2rem;">
+                    <h2 style="color: var(--primary-color);">Pharmacy Bill</h2>
+                    <p style="color: var(--text-color);">Date: <span id="billDate"></span></p>
+                </div>
+
+                <div class="bill-content" style="background-color: var(--light-bg); padding: 2rem; border-radius: 8px;">
+                    <div class="patient-info" style="margin-bottom: 2rem;">
+                        <h3 style="color: var(--text-color); margin-bottom: 1rem;">Patient Information</h3>
+                        <p><strong>Name:</strong> <span id="patientName"></span></p>
+                        <p><strong>Contact:</strong> <span id="patientContact"></span></p>
+                    </div>
+
+                    <div class="prescription-info" style="margin-bottom: 2rem;">
+                        <h3 style="color: var(--text-color); margin-bottom: 1rem;">Prescription Details</h3>
+                        <p><strong>Doctor:</strong> <span id="doctorName"></span></p>
+                        <p><strong>Date:</strong> <span id="prescriptionDate"></span></p>
+                    </div>
+
+                    <div class="medicines-list" style="margin-bottom: 2rem;">
+                        <h3 style="color: var(--text-color); margin-bottom: 1rem;">Medicines</h3>
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Medicine</th>
+                                    <th>Quantity</th>
+                                    <th>Price</th>
+                                    <th>Total</th>
+                                </tr>
+                            </thead>
+                            <tbody id="medicinesTable">
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="bill-summary" style="text-align: right;">
+                        <p><strong>Subtotal:</strong> ₹<span id="subtotal">0.00</span></p>
+                        <p><strong>Tax (5%):</strong> ₹<span id="tax">0.00</span></p>
+                        <p><strong>Total Amount:</strong> ₹<span id="total">0.00</span></p>
+                    </div>
+                </div>
+
+                <div class="bill-actions" style="display: flex; justify-content: center; gap: 1rem; margin-top: 2rem;">
+                    <button onclick="printBill()" class="btn">
+                        <i class="fas fa-print"></i> Print Bill
+                    </button>
+                    <button onclick="downloadBill()" class="btn" style="background-color: var(--light-bg); color: var(--text-color);">
+                        <i class="fas fa-download"></i> Download PDF
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById("billForm").onsubmit = async (e) => {
+            e.preventDefault();
+            const form = e.target;
+            const submitButton = form.querySelector('button[type="submit"]');
+            const messageContainer = document.getElementById("msg");
+            const billDetails = document.getElementById("billDetails");
+            
+            // Disable submit button and show loading state
+            submitButton.disabled = true;
+            submitButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating Bill...';
+            
+            try {
+                const id = new FormData(form).get("prescription_id");
+                const res = await fetch(`/generate-bill/${id}`, { method: 'POST' });
+                const data = await res.json();
+                
+                if (res.ok) {
+                    // Update bill details
+                    document.getElementById("billDate").textContent = new Date().toLocaleDateString();
+                    document.getElementById("patientName").textContent = data.patient_name;
+                    document.getElementById("patientContact").textContent = data.patient_contact;
+                    document.getElementById("doctorName").textContent = data.doctor_name;
+                    document.getElementById("prescriptionDate").textContent = data.prescription_date;
+                    
+                    // Update medicines table
+                    const medicinesTable = document.getElementById("medicinesTable");
+                    medicinesTable.innerHTML = '';
+                    let subtotal = 0;
+                    
+                    data.medicines.forEach(medicine => {
+                        const total = medicine.price * medicine.quantity;
+                        subtotal += total;
+                        medicinesTable.innerHTML += `
+                            <tr>
+                                <td>${medicine.name}</td>
+                                <td>${medicine.quantity}</td>
+                                <td>₹${medicine.price.toFixed(2)}</td>
+                                <td>₹${total.toFixed(2)}</td>
+                            </tr>
+                        `;
+                    });
+                    
+                    // Update totals
+                    const tax = subtotal * 0.05;
+                    const total = subtotal + tax;
+                    
+                    document.getElementById("subtotal").textContent = subtotal.toFixed(2);
+                    document.getElementById("tax").textContent = tax.toFixed(2);
+                    document.getElementById("total").textContent = total.toFixed(2);
+                    
+                    // Show bill details
+                    billDetails.style.display = 'block';
+                    messageContainer.style.display = 'none';
+                } else {
+                    throw new Error(data.message || 'Failed to generate bill');
+                }
+            } catch (error) {
+                messageContainer.style.display = 'block';
+                messageContainer.style.backgroundColor = '#f8d7da';
+                messageContainer.style.color = '#721c24';
+                messageContainer.innerHTML = `<i class="fas fa-exclamation-circle"></i> ${error.message}`;
+                billDetails.style.display = 'none';
+            } finally {
+                submitButton.disabled = false;
+                submitButton.innerHTML = '<i class="fas fa-file-invoice"></i> Generate Bill';
+            }
+        };
+
+        function printBill() {
+            window.print();
+        }
+
+        function downloadBill() {
+            // Implement PDF download functionality
+            alert('PDF download functionality will be implemented soon!');
+        }
+    </script>
+</body>
+</html>
